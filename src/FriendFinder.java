@@ -21,41 +21,63 @@ public class FriendFinder {
 	
 	
 	public Set<String> findClassmates(Student theStudent) {
-		
-		String name = theStudent.getName();
-		
-		// find the classes that this student is taking
-		List<String> myClasses = classesDataSource.getClasses(name);
-		
+		List<String> myClasses;
 		Set<String> classmates = new HashSet<String>();
+		if (theStudent == null || theStudent.getName() ==  null ) {
+			throw new IllegalArgumentException("the student is null");
+		}
 		
-		// use the classes to find the names of the students
-		for (String myClass : myClasses) {
-			// list all the students in the class
-			List<Student> students = studentsDataSource.getStudents(myClass);
+		
+		try {
+			String name = theStudent.getName();
+			if (classesDataSource == null || classesDataSource.getClasses(name) ==  null ) {
+				return null;
+			}
+			// find the classes that this student is taking
+			myClasses = classesDataSource.getClasses(name);
 			
-			for (Student student : students) {
+			
+			
+			// use the classes to find the names of the students
+			for (String myClass : myClasses) {
+				// list all the students in the class
+				if(myClass == null ||studentsDataSource == null) {
+					continue;
+				}
 				
-				// find the other classes that they're taking
-				List<String> theirClasses = classesDataSource.getClasses(student.getName());
-			
-				// see if all of the classes that they're taking are the same as the ones this student is taking
-				boolean same = true;
-				for (String c : myClasses) {
+				List<Student> students = studentsDataSource.getStudents(myClass);
+				if (students == null || students.isEmpty()) {
+					return null;
 					
-					if (theirClasses.contains(c) == false) {
-						same = false;
-						break;
+				}
+				for (Student student : students) {
+					if (student == null || student.getName() == null) {continue;}
+					// find the other classes that they're taking
+					List<String> theirClasses = classesDataSource.getClasses(student.getName());
+				
+					// see if all of the classes that they're taking are the same as the ones this student is taking
+					boolean same = true;
+					for (String c : myClasses) {
+						if (c == null) {continue;}
+						if (theirClasses.contains(c) == false) {
+							same = false;
+							break;
+						}
+					}
+					if (same) {
+						if (student.getName().equals(name) == false && classmates.contains(student.getName()) == false) 
+							classmates.add(student.getName());
 					}
 				}
-				if (same) {
-					if (student.getName().equals(name) == false && classmates.contains(student.getName()) == false) 
-						classmates.add(student.getName());
-				}
-			}
 
+			}
+		} catch (NullPointerException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			//System.out.println("null pointer exception");
+			return null;
 		}
-				
+		
 		if (classmates.isEmpty()) { 
 			return null;
 		}
